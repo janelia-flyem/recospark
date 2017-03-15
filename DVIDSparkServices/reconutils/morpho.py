@@ -51,6 +51,7 @@ def split_disconnected_bodies(labels_orig):
     """
     # Pre-allocate destination to force output dtype
     labels_consecutive = numpy.zeros_like(labels_orig, numpy.uint32)
+    labels_new = numpy.empty_like(labels_orig)
 
     labels_consecutive, max_consecutive_label, orig_to_consecutive = \
         vigra.analysis.relabelConsecutive(labels_orig, start_label=1, out=labels_consecutive)
@@ -84,8 +85,7 @@ def split_disconnected_bodies(labels_orig):
     split_to_origWithSplits = compose_mappings( split_to_consWithSplits, consWithSplits_to_origWithSplits )
 
     # Remap the image: split -> origWithSplits
-    labels_origWithSplits = numpy.empty_like(labels_split, dtype=numpy.uint64)
-    vigra.analysis.applyMapping( labels_split, split_to_origWithSplits, out=labels_origWithSplits )
+    vigra.analysis.applyMapping(labels_split, split_to_origWithSplits, out=labels_new)
     del labels_split
 
     origWithSplits_to_consWithSplits = reverse_dict( consWithSplits_to_origWithSplits )
@@ -106,7 +106,7 @@ def split_disconnected_bodies(labels_orig):
         if v in split_labels:
             final_mapping[k] = v
     
-    return labels_origWithSplits, final_mapping
+    return labels_new, final_mapping
 
 
 def _split_body_mappings( labels_orig, labels_split ):
